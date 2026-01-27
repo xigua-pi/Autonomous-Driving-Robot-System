@@ -16,7 +16,7 @@ UDP_PORT = 1234  # 接收视频数据的端口号
 BT_COM_PORT = 'COM9'  # 蓝牙模块在实验者电脑上的串口号（需根据实际修改）
 BT_BAUD_RATE = 9600  # 蓝牙通信波特率，HC-05默认9600
 MODEL_WEIGHTS = "model.pth"  # CNN巡航模型的权重文件名
-YOLO_MODEL_PATH = "best.pt"  # 修改为yolo8的模型文件名
+YOLO_MODEL_PATH = "best.pt"  # 修改为实验人在yolo8模型上改进的模型文件名
 
 # 滤波与控制参数
 SMOOTH_WINDOW_SIZE = 5  # 滑动平均窗口大小，值越大控制越丝滑但反应越慢
