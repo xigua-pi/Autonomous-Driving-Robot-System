@@ -29,7 +29,7 @@ TARGET_AREA_RATIO = 0.60  # 目标理想面积占比 (0~1)
 AREA_TOLERANCE = 0.10  # 面积容差，在此范围内不前后移动
 YOLO_CONF_THRES = 0.35  # YOLO检测的置信度阈值，越高越准确但容易漏检
 
-#---配置区结束---
+# ---配置区结束---
 
 # 负责通过UDP持续接收视频帧的类
 class EnhancedUDPGetter:
