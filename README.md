@@ -53,7 +53,7 @@ The system is divided into three layers:
 ---
 
 ##  Demo (效果演示)
-**
+*【【开源】基于Pyboard1.1.CN全栈自研自动驾驶小车：YOLOv8 视觉决策与 IMU 温漂补偿融合系统】 https://www.bilibili.com/video/BV1nCziBTEzr/?share_source=copy_web&vd_source=bea9fb3d3d926a0b3135c058968748ab*
 
 ---
 
