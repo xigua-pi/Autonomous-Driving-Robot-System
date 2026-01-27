@@ -1,5 +1,5 @@
-import cv2  # opencv
-import torch  # pytorch
+import cv2  # 引入opencv
+import torch  # 引入pytorch
 import numpy as np  # 矩阵运算库
 import threading  # 多线程库
 import socket  # 网络库，用于通过UDP协议接收摄像头数据
@@ -8,14 +8,15 @@ import serial  # 串口库，用于和蓝牙模块通信发送指令
 from collections import deque  # 队列库，用于存放最近几次的历史数据（平滑处理）
 from PIL import Image  # 图像处理库，用于转换图片格式供AI使用
 from torchvision import transforms  # AI预处理工具，用于缩放图片、转张量
-# 已删除 SimpleCNN 导入
+from model import SimpleCNN  # 从本地文件 model.py 导入实验人训练的simpleCNN结构
 from ultralytics import YOLO  # 导入YOLOv8目标检测模型
 
-# ================= 配置区 =================
+# ---配置区---
 UDP_PORT = 1234  # 接收视频数据的端口号
-BT_COM_PORT = 'COM9'  # 蓝牙模块在电脑上的串口号（需根据实际修改）
-BT_BAUD_RATE = 9600  # 蓝牙通信波特率，一般HC-05默认9600
-YOLO_MODEL_PATH = "yolov8n.pt"  # 修改为yolo8的模型文件名
+BT_COM_PORT = 'COM9'  # 蓝牙模块在实验者电脑上的串口号（需根据实际修改）
+BT_BAUD_RATE = 9600  # 蓝牙通信波特率，HC-05默认9600
+MODEL_WEIGHTS = "model.pth"  # CNN巡航模型的权重文件名
+YOLO_MODEL_PATH = "yolov8n.pt"  # 修改为yolo8模型文件名
 
 # 滤波与控制参数
 SMOOTH_WINDOW_SIZE = 5  # 滑动平均窗口大小，值越大控制越丝滑但反应越慢
@@ -27,7 +28,8 @@ CMD_INTERVAL = 0.1  # 向小车发送指令的时间间隔（单位：秒）
 TARGET_AREA_RATIO = 0.60  # 目标理想面积占比 (0~1)
 AREA_TOLERANCE = 0.10  # 面积容差，在此范围内不前后移动
 YOLO_CONF_THRES = 0.35  # YOLO检测的置信度阈值，越高越准确但容易漏检
-# ==========================================
+
+#---配置区结束---
 
 # 负责通过UDP持续接收视频帧的类
 class EnhancedUDPGetter:
@@ -41,7 +43,7 @@ class EnhancedUDPGetter:
         self.buffer = bytearray()  # 字节缓冲区，用于拼接图片数据
         self.last_frame_time = time.time()  # 记录上一帧收到的时间
 
-        #  新增统计变量 
+        # 新增统计变量 
         self.packet_count = 0  # 累计收到的包数
         self.frame_count = 0  # 成功解码的帧数
         self.start_time = time.time()
@@ -100,7 +102,7 @@ class ControlSmoother:
         steer_val: 转向值 (-1~1)
         speed_cmd: 速度字符 ('F', 'B', 'S')
         """
-        #  判定转向方向
+        # 判定转向方向 
         if steer_val > DEAD_ZONE:
             steer_dir = "R"  # 右转
         elif steer_val < -DEAD_ZONE:
@@ -112,7 +114,7 @@ class ControlSmoother:
         # 如果速度是停止 'S'，则指令就是 'S'
         current_combined = speed_cmd if speed_cmd == "S" else f"{speed_cmd}{steer_dir}"
 
-        #  去抖动逻辑 
+        # 去抖动逻辑 
         if current_combined == self.last_stable_cmd:
             self.counter = 0  # 如果指令没变，计数器清零
             return current_combined
@@ -139,7 +141,9 @@ def run_inference():
         print("[WARN] Simulation Mode")
 
     # 2. 加载AI模型
-    # 已删除 CNN 模型加载逻辑
+    cnn_model = SimpleCNN().to(device)  # 创建CNN模型实例并移至设备
+    cnn_model.load_state_dict(torch.load(MODEL_WEIGHTS, map_location=device))  # 加载权重文件
+    cnn_model.eval()  # 设置为预测模式
     yolo_model = YOLO(YOLO_MODEL_PATH)  # 加载YOLO模型
 
     # 3. 初始化状态变量（字典形式方便跨线程读写）
@@ -154,8 +158,10 @@ def run_inference():
 
     getter = EnhancedUDPGetter().start()  # 启动视频接收器
     smoother = ControlSmoother(SMOOTH_WINDOW_SIZE, DEBOUNCE_THRESHOLD)  # 初始化平滑器
+    # 定义图片进入CNN前的预处理流程：缩放为64x64，转为PyTorch张量
+    preprocess = transforms.Compose([transforms.Resize((64, 64)), transforms.ToTensor()])
 
-    # --- AI 推理工作线程 ---
+    #  AI 推理工作线程 
     def inference_worker():
         nonlocal state  # 声明使用外部的state变量
         while state['running']:
@@ -211,14 +217,17 @@ def run_inference():
 
                     state['mode_text'] = "MODE: LOCK-FOLLOW"  # 切换文字为跟随模式
             else:
-                # 丢失目标或未发现目标
+                # 丢失目标
                 state['last_target_center'] = None
                 state['target_box'] = None
 
-                # 修改部分：不再使用 CNN 巡航，直接停止
-                speed_char = "S"
-                steer_val = 0.0
-                state['mode_text'] = "MODE: IDLE (NO TARGET)"
+                # 切换到 CNN 巡航模式（看路行驶）
+                img_rgb = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)  # 转为RGB格式
+                input_tensor = preprocess(Image.fromarray(img_rgb)).unsqueeze(0).to(device)  # 预处理
+                with torch.no_grad():  # 不计算梯度，节省内存
+                    steer_val = cnn_model(input_tensor).item()  # CNN 预测转向值
+                speed_char = "F"  # 巡航模式默认前进
+                state['mode_text'] = "MODE: CNN-CRUISE"
 
             # 将预测的转向和速度交给平滑器，更新最终指令
             state['current_cmd'] = smoother.smooth(steer_val, speed_char)
@@ -231,7 +240,7 @@ def run_inference():
     last_bt_time = 0  # 记录上一次发指令的时间
     last_stat_time = time.time()
 
-    # --- 统计平滑变量 ---
+    # 统计平滑变量 
     avg_net_latency = 0.0
     ema_alpha = 0.1  # 指数移动平均系数，值越小越平滑
     loss_rate = 0.0
@@ -275,14 +284,14 @@ def run_inference():
                     bt.write(state['current_cmd'].encode())
                 last_bt_time = now
 
-            # --- 渲染可视化画面 ---
+            #  渲染可视化画面 
             display_frame = frame.copy()
             if state['target_box'] is not None:
                 b = state['target_box'].astype(int)
                 cv2.rectangle(display_frame, (b[0], b[1]), (b[2], b[3]), (0, 255, 0), 2)
                 cv2.circle(display_frame, tuple(state['last_target_center'].astype(int)), 5, (0, 0, 255), -1)
 
-            # --- 绘制延迟和网络状态 ---
+            # 绘制延迟和网络状态
             stat_line1 = f"Avg Net: {avg_net_latency:.1f}ms | AI: {state['latency']:.1f}ms"
             stat_line2 = f"FPS: {fps} | Loss: {loss_rate:.1f}% | Total: {getter.packet_count}"
 
