@@ -23,7 +23,7 @@ The system is divided into three layers:
 
 ### 1. Temperature-Compensated IMU Fusion (传感器温漂修正)
 * **Challenge**: MPU6050 gyroscope exhibits significant Z-axis drift due to temperature changes.
-* **Solution**: Established a regression model between angular velocity and temperature using **MATLAB**.
+* **Solution**: Established a regression model between angular velocity and temperature using **Python**.
 * **Result**: Reduced heading angle error to **within 1°**, enabling precise PID-based differential steering.
 
 ### 2. Real-time Vision Pipelines (实时视觉处理)
