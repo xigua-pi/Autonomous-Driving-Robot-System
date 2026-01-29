@@ -16,11 +16,37 @@ This module is responsible for capturing real-time video data from the OV2640 ca
 * **Power Management**: Optimized for battery-powered mobile robot operation.
 
 ## How to Flash (如何烧录)
-1. Install **Arduino IDE** or **PlatformIO**.
+1. Install **Arduino IDE**(We used 2.3.7 version) .
 2. Install the ESP32 board support package (v2.0.x recommended).
 3. Select board: "ESP32S3 Dev Module".
-4. Configure your Wi-Fi SSID and Password in the code.
-5. Upload the `.ino` file.
+5. Configure your Wi-Fi SSID and Password in the code.
+6. Upload the `.ino` file.
+
+something like:
+开发板: "ESP32S3 Dev Module"
+端口: "COM9" （根据个人端口来定）
+
+Reload Board Data
+获得开发板信息
+
+USB CDC On Boot: "Disabled"
+CPU Frequency: "240MHz (WiFi)"
+Core Debug Level: "None"
+USB DFU On Boot: "Disabled"
+Erase All Flash Before Sketch Upload: "Disabled"
+Events Run On: "Core 1"
+Flash Mode: "QIO 80MHz"
+Flash Size: "8MB (64Mb)"
+JTAG Adapter: "Disabled"
+Arduino Runs On: "Core 1"
+USB Firmware MSC On Boot: "Disabled"
+Partition Scheme: "Huge APP (3MB No OTA/1MB SPIFFS)"
+PSRAM: "OPI PSRAM"
+Upload Mode: "UART0 / Hardware CDC"
+Upload Speed: "921600"
+USB Mode: "Hardware CDC and JTAG"
+Zigbee Mode: "Disabled"
+
 
 ---
 **Author**: Kangzhe Zhang (张康哲) 
