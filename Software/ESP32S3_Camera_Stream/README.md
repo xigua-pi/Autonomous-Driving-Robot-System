@@ -20,7 +20,7 @@ This module is responsible for capturing real-time video data from the OV2640 ca
 2. Install the ESP32 board support package (v2.0.x recommended).
 3. Select board: "ESP32S3 Dev Module".
 4. Configure your Wi-Fi SSID and Password in the code.
-5. Upload the `.ino` or `.cpp` file.
+5. Upload the `.ino` file.
 
 ---
 **Author**: Kangzhe Zhang (张康哲) 
