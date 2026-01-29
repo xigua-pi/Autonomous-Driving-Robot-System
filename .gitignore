@@ -1,41 +1,11 @@
-# Prerequisites
-*.d
+# 忽略所有数据集下的图片文件夹
+Dataset/*/IMG/
 
-# Compiled Object files
-*.slo
-*.lo
-*.o
-*.obj
+#有模型权重文件，也忽略
+*.pth
+*.pt
+*.onnx
 
-# Precompiled Headers
-*.gch
-*.pch
-
-# Linker files
-*.ilk
-
-# Debugger Files
-*.pdb
-
-# Compiled Dynamic libraries
-*.so
-*.dylib
-*.dll
-
-# Fortran module files
-*.mod
-*.smod
-
-# Compiled Static libraries
-*.lai
-*.la
-*.a
-*.lib
-
-# Executables
-*.exe
-*.out
-*.app
-
-# debug information files
-*.dwo
+# 忽略系统自动生成的缓存
+__pycache__/
+.DS_Store
