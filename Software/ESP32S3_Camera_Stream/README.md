@@ -3,7 +3,7 @@
 
 This module is responsible for capturing real-time video data from the OV2640 camera sensor and transmitting JPEG frames via UDP protocol to the host PC.
 
-本模块负责通过 ESP32-S3 驱动 OV2640 摄像头，并将采集到的图像帧通过 UDP 协议实时传输至上位机。
+本模块负责通过 ESP32-S3 驱动 GC2145 摄像头，并将采集到的图像帧通过 UDP 协议实时传输至上位机。
 
 ## Hardware (硬件需求)
 * **Controller**: ESP32-S3-WROOM-1
