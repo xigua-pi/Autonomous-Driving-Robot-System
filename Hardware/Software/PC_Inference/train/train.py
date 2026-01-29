@@ -6,11 +6,11 @@ from model import SimpleCNN  # 确保 model.py 还是原来的 SimpleCNN
 import os
 
 # 参数配置
-dataset_jungle = "G:/autonomous_car/autonomous_car/dataset/self_driving_car_dataset_jungle"
-dataset_make = "G:/autonomous_car/autonomous_car/dataset/self_driving_car_dataset_make"
+dataset_jungle = "./dataset/self_driving_car_dataset_jungle"
+dataset_make = "./dataset/self_driving_car_dataset_make"
 
 batch_size = 32
-extra_epochs = 30  # 在 0.024 基础上再跑 30 轮
+extra_epochs = 50 
 learning_rate = 0.00005  # 使用更小的初始学习率进行精修
 model_save_path = "model.pth"
 
