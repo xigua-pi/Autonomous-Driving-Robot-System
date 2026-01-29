@@ -37,7 +37,7 @@ The system is divided into three layers:
 
 ##  Repository Structure (仓库结构)
 * `/Software/PC_Inference`: Python code for YOLOv8 and CNN inference.
-* `/Software/Firmware`: MicroPython scripts for Pyboard (PID, MPU6050 driver, Ultrasonic).
+* `/Software/Firmware`: MicroPython scripts for Pyboard (Ultrasonic,ir_receive,robotmind and main function which include PID, MPU6050 driver).
 * `/Hardware`: Circuit schematics and component list (BOM).
 * `/Dataset`: Sample images used for training the SimpleCNN model.
 
